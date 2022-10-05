@@ -2,6 +2,8 @@ package com.project.cargoproj
 
 import android.os.Bundle
 import android.util.Log
+import android.view.View
+import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -22,6 +24,7 @@ class MainActivity : AppCompatActivity() {
 
     lateinit var photoRV: RecyclerView
     lateinit var photoRVAdapter: ImageAdapter
+    lateinit var progress: ProgressBar
     lateinit var photoList: ArrayList<ResponseModel>
     private var currentPage: Int = 1
     private var isLoading = false
@@ -31,6 +34,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         //setUp viewModel
+        progress = findViewById(R.id.progress)
         setUpList()
         setupViewModel()
         getDataFromApi()
@@ -48,14 +52,22 @@ class MainActivity : AppCompatActivity() {
     }
     private fun getDataFromApi(){
         //?limit=100&page=10&order=Desc
-        var response =viewModel.getImage()
-        response?.enqueue(object : Callback<JSONObject> {
-            override fun onResponse(call: Call<JSONObject>, response: Response<JSONObject>) {
+        var response =viewModel.getImage(page = currentPage)
+        response?.enqueue(object : Callback<List<ResponseModel>?> {
+            override fun onResponse(call: Call<List<ResponseModel>?>, response: Response<List<ResponseModel>?>) {
                 Log.e("testIt",response.toString())
+                for(data in response.body()!!){
+                    photoList.add(data)
+                    photoRVAdapter.notifyItemChanged(photoList.size-1)
+                }
+                isLoading = false
+                progress.visibility = View.GONE
             }
-            override fun onFailure(call: Call<JSONObject>, t: Throwable) {
+            override fun onFailure(call: Call<List<ResponseModel>?>, t: Throwable) {
                 Log.e("testIt",t.toString())
                 Toast.makeText(baseContext,"API call failed",Toast.LENGTH_SHORT).show()
+                isLoading = false
+                progress.visibility = View.GONE
             }
         })
     }
@@ -81,6 +93,8 @@ class MainActivity : AppCompatActivity() {
                     if (!isLoading && lastVisibleItemPosition == totalItemCount - 1) {
                         currentPage += 1
                         isLoading = true
+                        progress.visibility = View.VISIBLE
+
                         getDataFromApi()
                     }
                 }

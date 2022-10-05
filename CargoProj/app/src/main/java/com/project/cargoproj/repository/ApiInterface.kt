@@ -12,7 +12,10 @@ import retrofit2.http.Query
 
 interface ApiInterface {
     //?limit=100&page=10&order=Desc
-    @GET("images/search?limit=100&page=10&order=Desc")
+    @GET("images/search")
     fun callAPI(
-    ): Call<JSONObject>
+        @Query("limit") limit: Int?,
+        @Query("page") page : Int?,
+        @Query("order") order: String?
+    ): Call<List<ResponseModel>?>
 }

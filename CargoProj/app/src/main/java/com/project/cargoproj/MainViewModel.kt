@@ -9,9 +9,9 @@ import retrofit2.Call
 
 class MainViewModel (private val mainRepository: MainRepository) : ViewModel() {
 
-     fun getImage(): Call<JSONObject> {
-         return mainRepository.callAPI()
-     }
+    fun getImage( limit : Int?=15, page: Int?,  order: String?="Desc"): Call<List<ResponseModel>?>? {
+        return mainRepository.callAPI( limit ,  page,  order)
+    }
 }
 
 
